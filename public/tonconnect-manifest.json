@@ -1,0 +1,9 @@
+{
+  "url": "https://olympus-exchange.ton",
+  "name": "Olympus Exchange",
+  "iconUrl": "https://olympus-exchange.ton/icon.png",
+  "termsOfUseUrl": "https://olympus-exchange.ton/terms",
+  "privacyPolicyUrl": "https://olympus-exchange.ton/privacy",
+  "manifest_version": 1,
+  "version": "0.1.0"
+}

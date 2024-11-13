@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-gold: 218 165 32;
+  }
+  
+  body {
+    @apply bg-blue-950;
+  }
+}
+
+@layer components {
+  .text-gold {
+    color: rgb(var(--color-gold));
+  }
+  
+  .bg-gold {
+    background-color: rgb(var(--color-gold));
+  }
+  
+  .border-gold {
+    border-color: rgb(var(--color-gold));
+  }
+}

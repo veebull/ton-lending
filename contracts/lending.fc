@@ -1,0 +1,81 @@
+;; Storage
+;; storage#_ owner:MsgAddress loans:(HashmapE 267 Loan) = Storage;
+;; loan#_ borrower:MsgAddress amount:Coins collateral:Coins due_date:uint64 = Loan;
+
+(slice, cell) load_data() inline {
+    var ds = get_data().begin_parse();
+    return (ds~load_msg_addr(), ds~load_dict());
+}
+
+() save_data(slice owner, cell loans) impure inline {
+    set_data(begin_cell()
+        .store_slice(owner)
+        .store_dict(loans)
+        .end_cell());
+}
+
+;; Loan creation
+() create_loan(slice borrower, int amount, int collateral, int due_date) impure {
+    var (owner, loans) = load_data();
+    
+    ;; Create loan entry
+    var loan_data = begin_cell()
+        .store_slice(borrower)
+        .store_coins(amount)
+        .store_coins(collateral)
+        .store_uint(due_date, 64)
+        .end_cell();
+    
+    ;; Add to loans dictionary
+    loans~udict_set_ref(267, slice_hash(borrower), loan_data);
+    save_data(owner, loans);
+}
+
+;; Repay loan
+() repay_loan(slice borrower) impure {
+    var (owner, loans) = load_data();
+    var (loan_exists, loan_data) = loans.udict_get_ref?(267, slice_hash(borrower));
+    throw_unless(404, loan_exists);
+    
+    ;; Process repayment and return collateral
+    ;; Implementation details depend on specific requirements
+    
+    ;; Remove loan from storage
+    loans~udict_delete?(267, slice_hash(borrower));
+    save_data(owner, loans);
+}
+
+;; Liquidate overdue loan
+() liquidate_loan(slice borrower) impure {
+    var (owner, loans) = load_data();
+    var (loan_exists, loan_data) = loans.udict_get_ref?(267, slice_hash(borrower));
+    throw_unless(404, loan_exists);
+    
+    ;; Check if loan is overdue and process liquidation
+    ;; Implementation details depend on specific requirements
+    
+    ;; Remove loan from storage
+    loans~udict_delete?(267, slice_hash(borrower));
+    save_data(owner, loans);
+}
+
+() recv_internal(int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_empty?()) { return (); }
+    
+    var op = in_msg_body~load_uint(32);
+    var query_id = in_msg_body~load_uint(64);
+    
+    if (op == 1) { ;; Create loan
+        var borrower = in_msg_body~load_msg_addr();
+        var amount = in_msg_body~load_coins();
+        var collateral = in_msg_body~load_coins();
+        var due_date = in_msg_body~load_uint(64);
+        create_loan(borrower, amount, collateral, due_date);
+    } elseif (op == 2) { ;; Repay loan
+        var borrower = in_msg_body~load_msg_addr();
+        repay_loan(borrower);
+    } elseif (op == 3) { ;; Liquidate loan
+        var borrower = in_msg_body~load_msg_addr();
+        liquidate_loan(borrower);
+    }
+} 
